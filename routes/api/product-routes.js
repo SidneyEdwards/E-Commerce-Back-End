@@ -3,14 +3,26 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 
 // The `/api/products` endpoint
 // get all products
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const productData = Product.findAll();
+    const productData = await Product.findAll({
+      attributes: ['id', 'product_name', 'price', 'stock', 'category_id'],
+      include: [
+          {
+              model: Category,
+              attributes: ['id', 'category_name']
+          },
+          {
+              model: Tag,
+              attributes: ['id', 'tag_name']
+          }
+      ]
+    });
 
-  res.json(productData);
+    res.json(productData);
 
   } catch (err) {
-res.status(500).json(err);
+    res.status(500).json(err);
   }
 });
 
@@ -20,13 +32,15 @@ res.status(500).json(err);
   router.get('/:id', (req, res) => {
     try {
     const productData = Product.findByPk(req.params.id, {
+      attributes: ['id', 'product_name', 'price', 'stock', 'category_id'],
       include:[
         {
           model: Category,
+          attributes: ['id', 'category_name']
         },
         {
           model: Tag,
-          through: ProductTag,
+          attributes: ['id', 'tag_name']
         }
       ]
     })
@@ -38,6 +52,8 @@ res.status(500).json(err);
 
 
 // create new product
+  router.post('/', (req, res) => 
+
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -46,7 +62,7 @@ res.status(500).json(err);
       tagIds: [1, 2, 3, 4]
     }
   */
-  router.post('/', (req, res) => {
+
 
   Product.create(req.body)
     .then((product) => {
@@ -69,9 +85,9 @@ res.status(500).json(err);
     .catch((err) => {
       console.log(err);
       res.status(400).json(err);
-    });
+    })
 
-  });
+  );
 
 // update product
 router.put('/:id', (req, res) => {
